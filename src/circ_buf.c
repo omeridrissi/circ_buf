@@ -1,15 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "circ_buf.h"
 
 CircBuf circbuf_alloc(size_t size) {
 	CircBuf new_circbuf;
 
 	// Check if size is a power of 2
-	if ((size & (size - 1)) == 0) {
-		return new_circbuf;
-	}
-
+	assert((size & (size - 1)) == 0);
 
 	new_circbuf.buffer = malloc(sizeof(char*)*size);
 	new_circbuf.size = size;
@@ -60,20 +58,20 @@ int circbuf_read(char* dst, CircBuf *circbuf, size_t count) {
 	
 	if (cnt_to_end >= count) {
 		for (size_t i = 0; i < count; ++i) {
-			dst[i] = circbuf->buffer[i + circbuf->head];
+			dst[i] = circbuf->buffer[i + circbuf->tail];
 		}
-		circbuf->head += count;
+		circbuf->tail += count;
 	} else {
 		size_t diff = count - cnt_to_end;
 		size_t i = 0;
 		for (; i < cnt_to_end; ++i) {
-			dst[i] = circbuf->buffer[i + circbuf->head];
+			dst[i] = circbuf->buffer[i + circbuf->tail];
 		}
-		circbuf->head = 0;
+		circbuf->tail = 0;
 		for (; i < cnt_to_end+diff; ++i) {
 			dst[i] = circbuf->buffer[i - cnt_to_end];
 		}
-		circbuf->head = diff;
+		circbuf->tail = diff;
 	}
 
 	return 0;
